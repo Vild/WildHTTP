@@ -1,2 +1,5 @@
 target
-WildHTTP*
+WildHTTP.log
+WildHTTP.log.lck
+WildHTTP.properties
+bin
