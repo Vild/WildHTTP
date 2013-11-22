@@ -1,0 +1,88 @@
+#productsfeed {
+	width: 1024px;
+	margin-top: 16px;
+
+	border-radius: 4px;
+	padding: 4px;
+
+	background-color: #434344;
+
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#productsfeed>#products {
+	height: 128px;
+	overflow: hidden;
+}
+
+#productsfeed>.title {
+	font-family: "Press Start 2P", sans-serif;
+	color: #F7F500;
+	font-size: 32px;
+	text-shadow: 2px 2px 2px #C7C500;
+	text-align: center;
+	margin-bottom: 10px;
+
+	background-color: #333334;
+	border-radius: 4px;
+	padding: 4px;
+}
+#productsfeed>#products>.product {
+	overflow: hidden;
+}
+#productsfeed>#products>.product>img {
+	width: 128px;
+	height: 128px;
+	margin-right: 16px;
+	position: relative;
+	float: left;
+	margin-top: auto;
+	margin-bottom: auto;
+}
+#productsfeed>#products>.product>.title {
+	font-family: "Press Start 2P", sans-serif;
+	color: #00A7F5;
+	font-size: 20px;
+	text-shadow: 2px 2px 2px #0067C5;
+	text-decoration: underline;
+	margin-right: 8px;
+}
+#productsfeed>#products>.product>.description {
+	width: 900px;
+	overflow-y: hidden;
+	padding-right: 16px;
+}
+
+#productsfeed>#products>.product>.description:hover {
+	overflow-y: scroll;
+}
+
+#productsfeed>#products>.product>.price {
+	position: relative;
+	float: right;
+
+	height: 30px;
+	line-height: 30px;
+	width: 120px;
+
+	background-color: #882222;
+	
+	border: 1px solid #441111;
+	text-align: right;
+	border-radius: 2px;
+
+	font-family: "Press Start 2P", sans-serif;
+	color: #DDDD11;
+	text-shadow: 2px 2px 2px #999905;
+	font-size: 16px;
+}
+
+#productsfeed>#products>.product>.cartbutton {
+	position: relative;
+	float: right;
+
+	height: 30px;
+	line-height: 30px;
+	width: 100px;
+}

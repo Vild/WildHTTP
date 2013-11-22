@@ -4,14 +4,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 
 import se.definewild.wildhttp.io.Log;
 import se.definewild.wildhttp.io.net.packet.PacketReceiver;
-import se.definewild.wildhttp.io.net.packet.PacketReceiverGet;
 import se.definewild.wildhttp.io.net.packet.PacketResponce;
+import se.definewild.wildhttp.io.net.packet.receive.PacketReceiverGet;
 
 public class PacketHandler {
 
@@ -22,10 +20,6 @@ public class PacketHandler {
   static {
     packets = new HashMap<String, Class<?>>();
     packets.put("GET", PacketReceiverGet.class);
-  }
-
-  private static String formatDate(Date date) {
-    return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").format(date);
   }
 
   public static PacketReceiver GetPacket(Socket socket) throws IOException {
@@ -45,7 +39,18 @@ public class PacketHandler {
 
     try {
       final PacketReceiver a = (PacketReceiver) packets.get(ID).newInstance();
-      a.Read(msg);
+      final HashMap<String, String> parts = new HashMap<>();
+      final String[] split = msg.trim().split("\n");
+      for (int i = 0; i < split.length; i++) {
+        String name = split[i].substring(0, split[i].indexOf(" ")).trim();
+        final String data = split[i].substring(split[i].indexOf(" ") + 1)
+            .trim();
+        if (name.endsWith(":"))
+          name = name.substring(0, name.length() - 1);
+        parts.put(name, data);
+      }
+
+      a.Read(parts);
       return a;
     } catch (final Exception e) {
       log.Severe(e.getMessage());
@@ -58,24 +63,7 @@ public class PacketHandler {
       throws IOException {
     final DataOutputStream output = new DataOutputStream(
         socket.getOutputStream());
-    final StringBuilder sb = new StringBuilder();
-    final String data = packet.Write();
-    // Header
-    sb.append("HTTP/1.1 200 OK\r\n");
-    sb.append("Date: " + formatDate(new Date(System.currentTimeMillis()))
-        + "\r\n");
-    sb.append("Server: WildHTTP\r\n");
-    sb.append("Last-Modified: "
-        + formatDate(new Date(System.currentTimeMillis())) + "\r\n");
-    sb.append("Accept-Ranges: bytes\r\n");
-    sb.append("Content-Length: " + data.length() + "\r\n");
-    sb.append("Vary: Accept-Encoding\r\n");
-    sb.append("Content-Type: " + packet.getDataType() + "\r\n");
-    sb.append("\r\n");
-    sb.append(data);
-    sb.append("\r\n");
-
-    output.write(sb.toString().getBytes());
+    output.write(packet.Write().getBytes());
     output.flush();
   }
 }

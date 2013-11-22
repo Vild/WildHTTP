@@ -1,15 +1,15 @@
 package se.definewild.wildhttp.io.net;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
 import se.definewild.wildhttp.io.Log;
 import se.definewild.wildhttp.io.SiteGetter;
 import se.definewild.wildhttp.io.net.packet.PacketReceiver;
-import se.definewild.wildhttp.io.net.packet.PacketReceiverGet;
 import se.definewild.wildhttp.io.net.packet.PacketResponce;
-import se.definewild.wildhttp.io.net.packet.PacketSimpleResponce;
+import se.definewild.wildhttp.io.net.packet.receive.PacketReceiverGet;
+import se.definewild.wildhttp.io.net.packet.send.PacketRedirect;
+import se.definewild.wildhttp.io.net.packet.send.PacketSimpleResponce;
 
 public class Client {
 
@@ -72,15 +72,15 @@ public class Client {
   }
 
   public void RecivedPacket(PacketReceiverGet packet) {
-    final File file = SiteGetter.GetSite(packet.getHost(), packet.getFile());
-    final String site = SiteGetter.GetContent(file).replaceAll("%USER-AGENT%",
-        packet.getUseragent());
-    if (site == null)
-      SendPacket(new PacketSimpleResponce(
-          "<p style='font-weight:bold;font-size:50px;'>Unknown file: "
-              + file.getAbsolutePath() + "</p>"));
+    final String to = SiteGetter.NeedsRedirection(packet.getHost(),
+        packet.getFile());
+
+    if (to != null)
+      SendPacket(new PacketRedirect(to));
     else
-      SendPacket(new PacketSimpleResponce(site));
+      SendPacket(new PacketSimpleResponce(null, SiteGetter.GetSite(
+          packet.getHost(), packet.getFile())));
+
     Close();
   }
 

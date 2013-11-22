@@ -3,12 +3,14 @@ package se.definewild.wildhttp;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import jline.ConsoleReader;
 import jline.Terminal;
 import se.definewild.wildhttp.io.Log;
 import se.definewild.wildhttp.io.ServerSettings;
+import se.definewild.wildhttp.io.SiteGetter;
 import se.definewild.wildhttp.io.net.Server;
 
 public class WildHTTP implements Runnable {
@@ -28,6 +30,7 @@ public class WildHTTP implements Runnable {
   public ConsoleReader reader;
   private Server server;
   public ServerSettings serverSettings;
+  private HashMap<String, Runnable> commands;
 
   public WildHTTP(String[] args) throws Exception {
     noJLine = java.lang.management.ManagementFactory.getRuntimeMXBean()
@@ -52,6 +55,37 @@ public class WildHTTP implements Runnable {
 
     log = new Log(reader);
     serverSettings = new ServerSettings();
+
+    setupCommandLine();
+  }
+
+  private void setupCommandLine() {
+    commands = new HashMap<>();
+    commands.put("help", new Runnable() {
+      @Override
+      public void run() {
+        for (String c : commands.keySet())
+          log.Info(c);
+      }
+    });
+    commands.put("reload", new Runnable() {
+      @Override
+      public void run() {
+        serverSettings = new ServerSettings();
+      }
+    });
+    commands.put("stop", new Runnable() {
+      @Override
+      public void run() {
+        server.Stop();
+      }
+    });
+    commands.put("clearcache", new Runnable() {
+      @Override
+      public void run() {
+        SiteGetter.ClearCache();
+      }
+    });
   }
 
   private void commandline() {
@@ -60,12 +94,10 @@ public class WildHTTP implements Runnable {
       command = ReadLine();
       if (command != null) {
         command = command.trim();
-        if (command.equalsIgnoreCase("help"))
-          log.Info("Help - help menu :P\nStop - stops the server");
-        else if (command.equalsIgnoreCase("reload"))
-          serverSettings = new ServerSettings();
-        else if (command.equalsIgnoreCase("stop"))
-          server.Stop();
+        if (commands.containsKey(command))
+          commands.get(command).run();
+        else
+          log.Warning("Unknown command");
       }
     }
   }

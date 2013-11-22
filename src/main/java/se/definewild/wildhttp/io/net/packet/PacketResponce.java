@@ -1,26 +1,13 @@
 package se.definewild.wildhttp.io.net.packet;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public abstract class PacketResponce {
 
-  public enum DataType {
-    HTML, TEXT;
+  protected static String formatDate(Date date) {
+    return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").format(date);
   }
-
-  private final DataType datatype;
-
-  public PacketResponce(DataType datatype) {
-    this.datatype = datatype;
-  }
-
-  public String getDataType() {
-    switch (datatype) {
-    case HTML:
-      return "text/html";
-    case TEXT:
-    default:
-      return "text/plain";
-    }
-  }
-
+  
   public abstract String Write();
 }
