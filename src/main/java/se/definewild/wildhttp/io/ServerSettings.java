@@ -1,17 +1,20 @@
 package se.definewild.wildhttp.io;
 
+import java.io.File;
+
 public class ServerSettings {
 
-  private final SettingsOLD settings;
+  private final Settings settings;
 
   public ServerSettings() {
-    settings = new SettingsOLD("WildHTTP.properties");
+    settings = new Settings(new File("WildHTTP.properties"));
 
-    settings.getInt("port", 80);
+    settings.SetIfNotExists("port", "80",
+        "The port number that the server will run on");
   }
 
   public int getPort() {
-    return settings.getInt("port", 80);
+    return settings.GetInt("port", 80);
   }
 
 }

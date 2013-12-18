@@ -22,7 +22,9 @@ public class PacketHandler {
     packets.put("GET", PacketReceiverGet.class);
   }
 
-  public static PacketReceiver GetPacket(Socket socket) throws IOException {
+  public static PacketReceiver GetPacket(Socket socket) throws Exception {
+    if (socket.isClosed())
+      throw new Exception();
     final DataInputStream input = new DataInputStream(socket.getInputStream());
     final int length = input.available();
     if (length == 0)
@@ -49,7 +51,6 @@ public class PacketHandler {
           name = name.substring(0, name.length() - 1);
         parts.put(name, data);
       }
-
       a.Read(parts);
       return a;
     } catch (final Exception e) {
@@ -63,7 +64,8 @@ public class PacketHandler {
       throws IOException {
     final DataOutputStream output = new DataOutputStream(
         socket.getOutputStream());
-    output.write(packet.Write().getBytes());
+    output.write(packet.Write());
     output.flush();
+    output.close();
   }
 }

@@ -22,15 +22,15 @@ public class WildHTTP implements Runnable {
     }
   }
 
+  private HashMap<String, Runnable> commands;
   private final BufferedReader in = new BufferedReader(new InputStreamReader(
       System.in));
-  private final Log log;
 
+  private final Log log;
   public boolean noJLine;
   public ConsoleReader reader;
   private Server server;
   public ServerSettings serverSettings;
-  private HashMap<String, Runnable> commands;
 
   public WildHTTP(String[] args) throws Exception {
     noJLine = java.lang.management.ManagementFactory.getRuntimeMXBean()
@@ -57,35 +57,6 @@ public class WildHTTP implements Runnable {
     serverSettings = new ServerSettings();
 
     setupCommandLine();
-  }
-
-  private void setupCommandLine() {
-    commands = new HashMap<>();
-    commands.put("help", new Runnable() {
-      @Override
-      public void run() {
-        for (String c : commands.keySet())
-          log.Info(c);
-      }
-    });
-    commands.put("reload", new Runnable() {
-      @Override
-      public void run() {
-        serverSettings = new ServerSettings();
-      }
-    });
-    commands.put("stop", new Runnable() {
-      @Override
-      public void run() {
-        server.Stop();
-      }
-    });
-    commands.put("clearcache", new Runnable() {
-      @Override
-      public void run() {
-        SiteGetter.ClearCache();
-      }
-    });
   }
 
   private void commandline() {
@@ -122,6 +93,7 @@ public class WildHTTP implements Runnable {
       public void run() {
         server.Stop();
         Log.getLog().Info("Server is stopped");
+
       }
     });
 
@@ -134,5 +106,35 @@ public class WildHTTP implements Runnable {
     }
 
     commandline();
+  }
+
+  private void setupCommandLine() {
+    commands = new HashMap<>();
+    commands.put("help", new Runnable() {
+      @Override
+      public void run() {
+        for (final String c : commands.keySet())
+          log.Info(c);
+      }
+    });
+    commands.put("reload", new Runnable() {
+      @Override
+      public void run() {
+        serverSettings = new ServerSettings();
+      }
+    });
+    commands.put("stop", new Runnable() {
+      @Override
+      public void run() {
+        server.Stop();
+      }
+    });
+    commands.put("clearcache", new Runnable() {
+      @Override
+      public void run() {
+        SiteGetter.ClearCache();
+        System.gc();
+      }
+    });
   }
 }

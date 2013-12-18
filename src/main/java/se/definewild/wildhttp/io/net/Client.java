@@ -2,8 +2,11 @@ package se.definewild.wildhttp.io.net;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 
 import se.definewild.wildhttp.io.Log;
+import se.definewild.wildhttp.io.SiteFile;
+import se.definewild.wildhttp.io.SiteFile.HTTPCode;
 import se.definewild.wildhttp.io.SiteGetter;
 import se.definewild.wildhttp.io.net.packet.PacketReceiver;
 import se.definewild.wildhttp.io.net.packet.PacketResponce;
@@ -26,22 +29,25 @@ public class Client {
       while (!isInterrupted())
         try {
           client.HandlePacket(PacketHandler.GetPacket(client.socket));
-        } catch (final IOException e) {
+        } catch (final Exception e) {
+          client.Close();
+          return;
         }
     }
   }
 
-  public int KeepAlive_Hash;
+  public long Created;
+
   public Log log = Log.getLog();
 
   public Socket socket;
-
-  private final waitPacket WaitPacket;
+  public waitPacket WaitPacket;
 
   public Client(Socket socket) {
     this.socket = socket;
     this.WaitPacket = new waitPacket(this);
     this.WaitPacket.start();
+    this.Created = System.currentTimeMillis();
   }
 
   public void Close() {
@@ -54,7 +60,7 @@ public class Client {
     Server.Clients.remove(this);
   }
 
-  public PacketReceiver GetPacket() throws IOException {
+  public PacketReceiver GetPacket() throws Exception {
     return PacketHandler.GetPacket(socket);
   }
 
@@ -74,20 +80,36 @@ public class Client {
   public void RecivedPacket(PacketReceiverGet packet) {
     final String to = SiteGetter.NeedsRedirection(packet.getHost(),
         packet.getFile());
+    try {
+      if (to != null)
+        SendPacket(new PacketRedirect(to));
+      else {
+        final SiteFile file = SiteGetter.GetSite(packet.getHost(),
+            packet.getFile());
 
-    if (to != null)
-      SendPacket(new PacketRedirect(to));
-    else
-      SendPacket(new PacketSimpleResponce(null, SiteGetter.GetSite(
-          packet.getHost(), packet.getFile())));
-
-    Close();
+        if ((packet.getIfModifiedSince() != null && packet.getIfModifiedSince()
+            .equals(
+                new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").format(
+                    file.getLastModified()).toString()))
+            && (packet.getIfNoneMatch() != null && packet.getIfNoneMatch()
+                .equals(file.getETag())))
+          SendPacket(new PacketSimpleResponce(null, new SiteFile(
+              file.getFile(), file.getType(), "".getBytes(),
+              file.getLastModified(), HTTPCode.NOT_MODIFIED, file.getETag())));
+        else
+          SendPacket(new PacketSimpleResponce(null, file));
+      }
+    } catch (final Exception e) {
+      e.printStackTrace();
+    }
   }
 
   public void SendPacket(PacketResponce packet) {
     try {
+      log.Info("sent: " + packet.toString());
       PacketHandler.SendPacket(socket, packet);
     } catch (final Exception e) {
+      e.printStackTrace();
     }
   }
 

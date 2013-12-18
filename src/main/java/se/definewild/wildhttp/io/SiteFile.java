@@ -9,25 +9,24 @@ import java.util.Date;
 public class SiteFile {
 
   public enum DataType {
-    TEXT("text/plain"), HTML("text/html"), JAVASCRIPT("text/javascript"), CSS(
-        "text/css"), CSV("text/csv"), XML("text/xml"), VCARD("text/vcard"), MPEG(
-        "video/mpeg"), MP4("video/mp4"), OGG("video/ogg"), MOV(
-        "video/quicktime"), WEBM("video/webm"), MKV("video/x-matroska"), WMV(
-        "video/x-ms-wmv"), FLV("video/x-flv"), MP3("audio/mpeg"), GIF(
-        "image/gif"), JPEG("image/jpeg"), PJPEG("image/pjpeg"), PNG("image/png"), SVG(
-        "image/svg+xml"), TIFF("image/tiff"), ATOM("application/atom+xml"), JSON(
-        "application/json"), DOWNLOAD("application/octet-stream"), PDF(
-        "application/pdf"), POSTSCRIPT("application/postscript"), RDF(
-        "application/rdf+xml"), RSS("application/rss+xml"), SOAP(
-        "application/soap+xml"), WOFF("application/font-woff"), XHTML(
-        "application/xhtml+xml"), ZIP("application/zip"), GZIP(
-        "application/gzip"), SEVEN_ZIP("application/x-7z-compressed"), CRX(
-        "application/x-chrome-extension"), DEB("application/x-deb"), DVI(
-        "application/x-dvi"), TFF("application/x-font-ttf"), LATEX(
-        "application/x-latex"), RAR("application/x-rar-compressed"), SWF(
-        "application/x-shockwave-flash"), TAR("application/x-tar"), XPI(
-        "application/x-xpinstall"), AAC("audio/x-aac"), CAF("audio/x-caf"), XCF(
-        "image/x-xcf"), MARKDOWN("text/x-markdown");
+    AAC("audio/x-aac"), ATOM("application/atom+xml"), CAF("audio/x-caf"), CRX(
+        "application/x-chrome-extension"), CSS("text/css"), CSV("text/csv"), DEB(
+        "application/x-deb"), DOWNLOAD("application/octet-stream"), DVI(
+        "application/x-dvi"), FLV("video/x-flv"), GIF("image/gif"), GZIP(
+        "application/gzip"), HTML("text/html"), JAVASCRIPT("text/javascript"), JPEG(
+        "image/jpeg"), JSON("application/json"), LATEX("application/x-latex"), MARKDOWN(
+        "text/x-markdown"), MKV("video/x-matroska"), MOV("video/quicktime"), MP3(
+        "audio/mpeg"), MP4("video/mp4"), MPEG("video/mpeg"), OGG("video/ogg"), PDF(
+        "application/pdf"), PJPEG("image/pjpeg"), PNG("image/png"), POSTSCRIPT(
+        "application/postscript"), RAR("application/x-rar-compressed"), RDF(
+        "application/rdf+xml"), RSS("application/rss+xml"), SEVEN_ZIP(
+        "application/x-7z-compressed"), SOAP("application/soap+xml"), SVG(
+        "image/svg+xml"), SWF("application/x-shockwave-flash"), TAR(
+        "application/x-tar"), TEXT("text/plain"), TFF("application/x-font-ttf"), TIFF(
+        "image/tiff"), VCARD("text/vcard"), WEBM("video/webm"), WMV(
+        "video/x-ms-wmv"), WOFF("application/font-woff"), XCF("image/x-xcf"), XHTML(
+        "application/xhtml+xml"), XML("text/xml"), XPI(
+        "application/x-xpinstall"), ZIP("application/zip");
 
     private String type;
 
@@ -35,29 +34,32 @@ public class SiteFile {
       this.type = type;
     }
 
+    @Override
     public String toString() {
       return type;
     }
   }
 
   public enum HTTPCode {
-    OK("200 OK"), NOT_FOUND("404 Not Found");
+    NOT_FOUND("404 Not Found"), NOT_MODIFIED("304 Not Modified"), OK("200 OK");
     private String code;
 
     HTTPCode(String code) {
       this.code = code;
     }
 
+    @Override
     public String toString() {
       return code;
     }
   }
 
-  private File file;
-  private DataType type;
-  private String content;
-  private Date lastModified;
-  private HTTPCode httpCode;
+  private byte[] content;
+  private final String etag;
+  private final File file;
+  private final HTTPCode httpCode;
+  private final Date lastModified;
+  private final DataType type;
 
   public SiteFile(File file) throws FileNotFoundException {
     if (!file.exists())
@@ -68,20 +70,71 @@ public class SiteFile {
     this.content = getContent(file);
     this.lastModified = new Date(file.lastModified());
     this.httpCode = HTTPCode.OK;
+    this.etag = new String(WHA.WHA0(this.content));
   }
 
-  public SiteFile(File file, DataType type, String content, Date lastModified,
-      HTTPCode httpCode) {
+  public SiteFile(File file, DataType type, byte[] content, Date lastModified,
+      HTTPCode httpCode, String etag) {
     this.file = file;
     this.type = type;
     this.content = content;
+    if (this.content == null)
+      this.content = new byte[0];
     this.lastModified = lastModified;
     this.httpCode = httpCode;
+    this.etag = etag;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    final SiteFile other = (SiteFile) obj;
+    if (content == null) {
+      if (other.content != null)
+        return false;
+    } else if (!content.equals(other.content))
+      return false;
+    if (file == null) {
+      if (other.file != null)
+        return false;
+    } else if (!file.equals(other.file))
+      return false;
+    if (httpCode != other.httpCode)
+      return false;
+    if (lastModified == null) {
+      if (other.lastModified != null)
+        return false;
+    } else if (!lastModified.equals(other.lastModified))
+      return false;
+    if (type != other.type)
+      return false;
+    return true;
+  }
+
+  public byte[] getContent() {
+    return content;
+  }
+
+  private byte[] getContent(File file) {
+    try {
+      final DataInputStream in = new DataInputStream(new FileInputStream(file));
+      final byte[] buffer = new byte[in.available()];
+      in.read(buffer);
+      in.close();
+      return buffer;
+    } catch (final Exception e) {
+      return null;
+    }
   }
 
   private DataType getDataType(File file) {
-    String part[] = file.getName().split("\\.");
-    String ext = part[part.length - 1];
+    final String part[] = file.getName().split("\\.");
+    final String ext = part[part.length - 1];
 
     if (ext.equalsIgnoreCase("html") || ext.equalsIgnoreCase("htm"))
       return DataType.HTML;
@@ -184,36 +237,24 @@ public class SiteFile {
       return DataType.TEXT;
   }
 
-  private String getContent(File file) {
-    try {
-      final DataInputStream in = new DataInputStream(new FileInputStream(file));
-      final byte[] buffer = new byte[in.available()];
-      in.read(buffer);
-      in.close();
-      return new String(buffer);
-    } catch (final Exception e) {
-      return null;
-    }
+  public String getETag() {
+    return etag;
   }
 
   public File getFile() {
     return file;
   }
 
-  public DataType getType() {
-    return type;
+  public HTTPCode getHttpCode() {
+    return httpCode;
   }
 
   public Date getLastModified() {
     return lastModified;
   }
 
-  public String getContent() {
-    return content;
-  }
-
-  public HTTPCode getHttpCode() {
-    return httpCode;
+  public DataType getType() {
+    return type;
   }
 
   @Override
@@ -230,34 +271,10 @@ public class SiteFile {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    SiteFile other = (SiteFile) obj;
-    if (content == null) {
-      if (other.content != null)
-        return false;
-    } else if (!content.equals(other.content))
-      return false;
-    if (file == null) {
-      if (other.file != null)
-        return false;
-    } else if (!file.equals(other.file))
-      return false;
-    if (httpCode != other.httpCode)
-      return false;
-    if (lastModified == null) {
-      if (other.lastModified != null)
-        return false;
-    } else if (!lastModified.equals(other.lastModified))
-      return false;
-    if (type != other.type)
-      return false;
-    return true;
+  public String toString() {
+    return "SiteFile [content.length=" + content.length + ", etag=" + etag
+        + ", file=" + file + ", httpCode=" + httpCode + ", lastModified="
+        + lastModified + ", type=" + type + "]";
   }
 
 }

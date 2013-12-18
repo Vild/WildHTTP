@@ -9,8 +9,8 @@ import se.definewild.wildhttp.io.net.packet.PacketResponce;
 
 public class PacketSimpleResponce extends PacketResponce {
 
+  private final SiteFile file;
   private HashMap<String, String> header;
-  private SiteFile file;
 
   public PacketSimpleResponce(HashMap<String, String> header, SiteFile file) {
     if (header == null)
@@ -22,9 +22,11 @@ public class PacketSimpleResponce extends PacketResponce {
     add("Server", "WildHTTP");
     add("Last-Modified", formatDate(file.getLastModified()));
     add("Accept-Ranges", "bytes");
-    add("Content-Length", file.getContent().length() + "");
+    add("Content-Length", file.getContent().length + "");
     add("Vary", "Accept-Encoding");
-    add("Content-Type", file.getType().toString());
+    add("Content-Type", file.getType().toString() + "; charset=UTF-8");
+    add("Connection", "keep-alive");
+    add("ETag", file.getETag());
   }
 
   private void add(String key, String value) {
@@ -33,17 +35,27 @@ public class PacketSimpleResponce extends PacketResponce {
   }
 
   @Override
-  public String Write() {
+  public String toString() {
+    return "PacketSimpleResponce [file=" + file + ", header=" + header + "]";
+  }
+
+  @Override
+  public byte[] Write() {
     final StringBuilder sb = new StringBuilder();
     // Header
     sb.append("HTTP/1.1 " + file.getHttpCode().toString() + "\r\n");
-    for (Entry<String, String> item : header.entrySet())
+    for (final Entry<String, String> item : header.entrySet())
       sb.append(item.getKey() + ": " + item.getValue() + "\r\n");
 
     sb.append("\r\n");
-    sb.append(file.getContent());
-    sb.append("\r\n");
-    return sb.toString();
+    final byte[] b = new byte[sb.length() + file.getContent().length];
+
+    for (int i = 0; i < sb.length(); i++)
+      b[i] = sb.toString().getBytes()[i];
+
+    for (int i = 0; i < file.getContent().length; i++)
+      b[i + sb.length()] = file.getContent()[i];
+    return b;
   }
 
 }

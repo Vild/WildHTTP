@@ -1,5 +1,8 @@
 target
 WildHTTP.log
+WildHTTP.log.1
 WildHTTP.log.lck
 WildHTTP.properties
 bin
+LOIC.exe
+hs_err_pid*.log
