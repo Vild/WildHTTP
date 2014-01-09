@@ -40,13 +40,12 @@ public class WHA {
     String ret = "";
     final Random rand = new Random(seed);
 
-    for (int i = 0; i < length; i++) {
-      final int x = rand.nextInt('z' - 'a' + 10);
-      if (x < 10)
-        ret += x;
-      else
-        ret += 'a' + (x - 10);
-    }
+    for (int i = 0; i < length; i++)
+      if (rand.nextBoolean()) {
+        final int x = rand.nextInt('z' - 'a');
+        ret += "" + ('a' + x);
+      } else
+        ret += "" + rand.nextInt(10);
 
     return ret;
   }
@@ -64,7 +63,7 @@ public class WHA {
   public static byte[] WHA0(byte[] data) {
     try {
       final Vector<Byte> ret = new Vector<Byte>();
-      for (final char c : RandomChar(0xBEEFB00B, 32).toCharArray())
+      for (final char c : RandomChar(0xBEEFB00B, 64).toCharArray())
         ret.add((byte) c);
       long all = data.length;
       for (final byte c : data)
@@ -75,8 +74,8 @@ public class WHA {
       ret.add(Long.toString(all * 4, 24).getBytes()[0]);
       ret.add(Long.toString(all * 8, 24).getBytes()[0]);
 
-      for (int i = 0; i < Math.pow(data.length, 2) / 2; i++)
-        ret.add(data[(Math.abs(i * data.length * 0x1337) % data.length)]);
+      // for (int i = 0; i < Math.pow(data.length, 2) / 2; i++)
+      // ret.add(data[(Math.abs(i * data.length * 0x1337) % data.length)]);
 
       final byte[] x = new byte[ret.size()];
       for (int i = 0; i < ret.size(); i++)

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import se.definewild.wildhttp.WildHTTP;
 import se.definewild.wildhttp.io.SiteFile;
 import se.definewild.wildhttp.io.net.packet.PacketResponce;
 
@@ -19,7 +20,7 @@ public class PacketSimpleResponce extends PacketResponce {
       this.header = header;
     this.file = file;
     add("Date", formatDate(new Date(System.currentTimeMillis())));
-    add("Server", "WildHTTP");
+    add("Server", WildHTTP.FULLNAME);
     add("Last-Modified", formatDate(file.getLastModified()));
     add("Accept-Ranges", "bytes");
     add("Content-Length", file.getContent().length + "");

@@ -85,7 +85,9 @@ public class Client {
         SendPacket(new PacketRedirect(to));
       else {
         final SiteFile file = SiteGetter.GetSite(packet.getHost(),
-            packet.getFile());
+            packet.getFile(), packet.getPost(), packet.getGet(),
+            packet.getHeader(),
+            packet.getRequestMode() != PacketReceiver.RequestMode.HEAD);
 
         if ((packet.getIfModifiedSince() != null && packet.getIfModifiedSince()
             .equals(
@@ -95,7 +97,8 @@ public class Client {
                 .equals(file.getETag())))
           SendPacket(new PacketSimpleResponce(null, new SiteFile(
               file.getFile(), file.getType(), "".getBytes(),
-              file.getLastModified(), HTTPCode.NOT_MODIFIED, file.getETag())));
+              file.getLastModified(), HTTPCode.NOT_MODIFIED, packet.getPost(),
+              packet.getGet(), true)));
         else
           SendPacket(new PacketSimpleResponce(null, file));
       }

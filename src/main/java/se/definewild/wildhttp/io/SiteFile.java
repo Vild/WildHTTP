@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Date;
+import java.util.HashMap;
 
 public class SiteFile {
 
@@ -54,35 +55,63 @@ public class SiteFile {
     }
   }
 
+  private static HashMap<File, byte[]> cacheFile = new HashMap<>();
+
   private byte[] content;
   private final String etag;
   private final File file;
+  private final HashMap<String, String> get;
+  private final HashMap<String, String> header;
   private final HTTPCode httpCode;
+
   private final Date lastModified;
+  private final HashMap<String, String> post;
+
   private final DataType type;
 
-  public SiteFile(File file) throws FileNotFoundException {
-    if (!file.exists())
-      throw new FileNotFoundException(file.getPath());
-
-    this.file = file;
-    this.type = getDataType(file);
-    this.content = getContent(file);
-    this.lastModified = new Date(file.lastModified());
-    this.httpCode = HTTPCode.OK;
-    this.etag = new String(WHA.WHA0(this.content));
-  }
-
   public SiteFile(File file, DataType type, byte[] content, Date lastModified,
-      HTTPCode httpCode, String etag) {
+      HTTPCode httpCode, HashMap<String, String> post,
+      HashMap<String, String> get, boolean sendData) {
+    this.post = post;
+    this.get = get;
+    this.header = new HashMap<>();
+
     this.file = file;
     this.type = type;
-    this.content = content;
+    if (sendData)
+      this.content = content;
     if (this.content == null)
       this.content = new byte[0];
     this.lastModified = lastModified;
     this.httpCode = httpCode;
-    this.etag = etag;
+    this.etag = new String(WHA.WHA0(this.content));
+  }
+
+  public SiteFile(File file, HashMap<String, String> post,
+      HashMap<String, String> get, HashMap<String, String> header,
+      boolean sendData) throws FileNotFoundException {
+    if (!file.exists())
+      throw new FileNotFoundException(file.getPath());
+
+    this.post = post;
+    this.get = get;
+    this.header = header;
+
+    this.file = file;
+    this.type = getDataType(file);
+    if (sendData)
+      if (cacheFile.containsKey(file))
+        this.content = cacheFile.get(file);
+      else {
+        this.content = getContent(file);
+        cacheFile.put(file, this.content);
+      }
+    else
+      this.content = new byte[0];
+
+    this.lastModified = new Date(file.lastModified());
+    this.httpCode = HTTPCode.OK;
+    this.etag = null;
   }
 
   @Override
@@ -117,7 +146,11 @@ public class SiteFile {
   }
 
   public byte[] getContent() {
-    return content;
+    // TODO: fix replace -> scripting
+    if (file.getName().endsWith(".html"))
+      return ReplacePostGet(new String(content)).getBytes();
+    else
+      return content;
   }
 
   private byte[] getContent(File file) {
@@ -128,7 +161,7 @@ public class SiteFile {
       in.close();
       return buffer;
     } catch (final Exception e) {
-      return null;
+      return new byte[0];
     }
   }
 
@@ -230,7 +263,7 @@ public class SiteFile {
       return DataType.CAF;
     else if (ext.equalsIgnoreCase("xcf"))
       return DataType.XCF;
-    else if (ext.equalsIgnoreCase("markdown") || ext.equalsIgnoreCase("mk"))
+    else if (ext.equalsIgnoreCase("markdown") || ext.equalsIgnoreCase("md"))
       return DataType.MARKDOWN;
 
     else
@@ -238,7 +271,10 @@ public class SiteFile {
   }
 
   public String getETag() {
-    return etag;
+    if (etag != null)
+      return etag;
+    else
+      return new String(WHA.WHA0(content));
   }
 
   public File getFile() {
@@ -268,6 +304,16 @@ public class SiteFile {
         + ((lastModified == null) ? 0 : lastModified.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
     return result;
+  }
+
+  private String ReplacePostGet(String content) {
+    String buf = content.replaceAll("%POST%", post.toString());
+    buf = buf.replaceAll("%GET%", get.toString());
+    buf = buf
+        .replaceAll("%USER-AGENT%",
+            header.containsKey("User-Agent") ? header.get("User-Agent")
+                : "UNKNOWN");
+    return buf;
   }
 
   @Override

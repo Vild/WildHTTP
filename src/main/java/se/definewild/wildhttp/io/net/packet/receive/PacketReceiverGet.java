@@ -9,10 +9,12 @@ public class PacketReceiverGet extends PacketReceiver {
   private String acceptEncoding;
   private String acceptLanguage;
   private String file;
-  private String host;
+  private HashMap<String, String> get;
 
+  private String host;
   private String ifModifiedSince;
   private String ifNoneMatch;
+  private HashMap<String, String> post;
   private String referer;
   private String userAgent;
 
@@ -28,6 +30,10 @@ public class PacketReceiverGet extends PacketReceiver {
     return file;
   }
 
+  public HashMap<String, String> getGet() {
+    return get;
+  }
+
   public String getHost() {
     return host;
   }
@@ -38,6 +44,10 @@ public class PacketReceiverGet extends PacketReceiver {
 
   public String getIfNoneMatch() {
     return ifNoneMatch;
+  }
+
+  public HashMap<String, String> getPost() {
+    return post;
   }
 
   public String getReferer() {
@@ -60,8 +70,20 @@ public class PacketReceiverGet extends PacketReceiver {
   }
 
   @Override
-  public void Read(HashMap<String, String> header) {
-    file = header.get("GET");
+  public void Read(HashMap<String, String> header, HashMap<String, String> post) {
+    this.header = header;
+    this.post = post;
+
+    if (header.get("GET") != null) {
+      requestMode = RequestMode.GET;
+      file = header.get("GET");
+    } else if (header.get("HEAD") != null) {
+      requestMode = RequestMode.HEAD;
+      file = header.get("HEAD");
+    } else if (header.get("POST") != null) {
+      requestMode = RequestMode.POST;
+      file = header.get("POST");
+    }
     if (file == null)
       file = "/ HTTP/1.1";
     else
@@ -84,5 +106,18 @@ public class PacketReceiverGet extends PacketReceiver {
     acceptEncoding = header.get("Accept-Encoding");
     ifModifiedSince = header.get("If-Modified-Since");
     ifNoneMatch = header.get("If-None-Match");
+
+    this.get = new HashMap<>();
+    if (this.file.indexOf("?") != -1) {
+      final String tmp[] = this.file.split("\\?");
+      this.file = tmp[0];
+      for (final String part : tmp[1].split("&")) {
+        final String parttmp[] = part.split("=");
+        if (parttmp.length == 1)
+          this.get.put(parttmp[0], null);
+        else
+          this.get.put(parttmp[0], parttmp[1]);
+      }
+    }
   }
 }

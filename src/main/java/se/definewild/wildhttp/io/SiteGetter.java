@@ -10,10 +10,8 @@ import se.definewild.wildhttp.io.SiteFile.HTTPCode;
 public class SiteGetter {
 
   public static HashMap<String, File> cacheDirectory = new HashMap<>();
-  public static HashMap<String, SiteFile> cacheFile = new HashMap<>();
 
   public static void ClearCache() {
-    cacheFile.clear();
     cacheDirectory.clear();
   }
 
@@ -30,22 +28,20 @@ public class SiteGetter {
     return new File(dir.toString() + file);
   }
 
-  public static SiteFile GetSite(String host, String file) {
-    Log.getLog().Info("file: " + file);
-    final File f = GetFilePath(host, file);
-    SiteFile sitefile;
+  public static File GetIndex(String host, File file) {
+    return new File(file, "index.html");
+  }
 
-    if (cacheFile.containsKey(f.toString()))
-      return cacheFile.get(f.toString());
+  public static SiteFile GetSite(String host, String file,
+      HashMap<String, String> post, HashMap<String, String> get,
+      HashMap<String, String> header, boolean sendData) {
+    final File f = GetFilePath(host, file);
 
     try {
       if (f.isDirectory())
-        sitefile = new SiteFile(new File(f, "index.html")); // TODO: add config index
+        return new SiteFile(GetIndex(host, f), post, get, header, sendData);
       else
-        sitefile = new SiteFile(f);
-
-      if (sitefile.getContent() == null)
-        throw new Exception();
+        return new SiteFile(f, post, get, header, sendData);
     } catch (final Exception e) {
       if (f.isDirectory()) {
         final StringBuilder sb = new StringBuilder();
@@ -64,19 +60,15 @@ public class SiteGetter {
         }
 
         sb.append("</body>\n" + "</html>");
-        sitefile = new SiteFile(f, DataType.HTML, sb.toString().getBytes(),
-            new Date(System.currentTimeMillis()), HTTPCode.OK, new String(
-                WHA.WHA0(sb.toString().getBytes())));
+        return new SiteFile(f, DataType.HTML, sb.toString().getBytes(),
+            new Date(System.currentTimeMillis()), HTTPCode.OK, post, get, true);
       } else {
         final String x = "<p style='font-weight:bold;font-size:50px;'>Unknown file: "
             + file + "</p>";
-        sitefile = new SiteFile(f, DataType.HTML, x.getBytes(), new Date(
-            System.currentTimeMillis()), HTTPCode.NOT_FOUND, new String(
-            WHA.WHA0(x.getBytes())));
+        return new SiteFile(f, DataType.HTML, x.getBytes(), new Date(
+            System.currentTimeMillis()), HTTPCode.NOT_FOUND, post, get, true);
       }
     }
-    cacheFile.put(f.toString(), sitefile);
-    return sitefile;
   }
 
   public static String NeedsRedirection(String host, String file) {

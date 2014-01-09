@@ -14,6 +14,11 @@ import se.definewild.wildhttp.io.SiteGetter;
 import se.definewild.wildhttp.io.net.Server;
 
 public class WildHTTP implements Runnable {
+
+  public static final String _NAME = "WildHTTP";
+  public static final String _VERSION = "1.0.0-SNAPSHOT";
+  public static final String FULLNAME = _NAME + " " + _VERSION;
+
   public static void main(String[] args) {
     try {
       new WildHTTP(args).run();
