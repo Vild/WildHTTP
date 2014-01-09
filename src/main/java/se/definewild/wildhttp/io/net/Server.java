@@ -3,7 +3,6 @@ package se.definewild.wildhttp.io.net;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
 import se.definewild.wildhttp.io.Log;
@@ -47,6 +46,7 @@ public class Server implements Runnable {
     }
   }
 
+  public final int MAX_THREADS = 100;
   public final static ArrayList<Client> Clients = new ArrayList<Client>();
 
   private final clientCleanup cleanup;
@@ -74,10 +74,15 @@ public class Server implements Runnable {
         return;
 
       try {
+        while (Clients.size() > MAX_THREADS) {
+          System.gc();
+          Thread.sleep(0);
+        }
+
         final Socket client = server.accept();
         Clients.add(new Client(client));
-      } catch (final SocketTimeoutException e) {
-      } catch (final IOException e) {
+
+      } catch (final Exception e) {
       }
     }
   }
