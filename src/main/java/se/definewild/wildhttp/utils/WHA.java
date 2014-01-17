@@ -1,4 +1,4 @@
-package se.definewild.wildhttp.io;
+package se.definewild.wildhttp.utils;
 
 import java.util.Random;
 import java.util.Vector;

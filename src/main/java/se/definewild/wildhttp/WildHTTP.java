@@ -8,9 +8,9 @@ import java.util.logging.Logger;
 
 import jline.ConsoleReader;
 import jline.Terminal;
-import se.definewild.wildhttp.io.Log;
-import se.definewild.wildhttp.io.ServerSettings;
-import se.definewild.wildhttp.io.SiteGetter;
+import se.definewild.wildhttp.io.file.SiteGetter;
+import se.definewild.wildhttp.io.file.log.Log;
+import se.definewild.wildhttp.io.file.settings.ServerSettings;
 import se.definewild.wildhttp.io.net.Server;
 
 public class WildHTTP implements Runnable {

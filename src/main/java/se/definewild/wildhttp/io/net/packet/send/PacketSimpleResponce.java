@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import se.definewild.wildhttp.WildHTTP;
-import se.definewild.wildhttp.io.SiteFile;
+import se.definewild.wildhttp.io.file.SiteFile;
 import se.definewild.wildhttp.io.net.packet.PacketResponce;
 
 public class PacketSimpleResponce extends PacketResponce {

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
 
-import se.definewild.wildhttp.io.Log;
+import se.definewild.wildhttp.io.file.log.Log;
 import se.definewild.wildhttp.io.net.packet.PacketReceiver;
 import se.definewild.wildhttp.io.net.packet.PacketResponce;
 import se.definewild.wildhttp.io.net.packet.receive.PacketReceiverGet;

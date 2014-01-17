@@ -1,4 +1,4 @@
-package se.definewild.wildhttp.io;
+package se.definewild.wildhttp.io.file.log;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

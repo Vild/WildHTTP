@@ -1,4 +1,4 @@
-package se.definewild.wildhttp.io;
+package se.definewild.wildhttp.io.file.log;
 
 import java.io.IOException;
 import java.util.logging.FileHandler;

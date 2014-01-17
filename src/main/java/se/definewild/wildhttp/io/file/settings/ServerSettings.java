@@ -1,4 +1,4 @@
-package se.definewild.wildhttp.io;
+package se.definewild.wildhttp.io.file.settings;
 
 import java.io.File;
 

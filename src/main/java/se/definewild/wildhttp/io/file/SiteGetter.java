@@ -1,11 +1,11 @@
-package se.definewild.wildhttp.io;
+package se.definewild.wildhttp.io.file;
 
 import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 
-import se.definewild.wildhttp.io.SiteFile.DataType;
-import se.definewild.wildhttp.io.SiteFile.HTTPCode;
+import se.definewild.wildhttp.io.file.SiteFile.DataType;
+import se.definewild.wildhttp.io.file.SiteFile.HTTPCode;
 
 public class SiteGetter {
 

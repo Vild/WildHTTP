@@ -5,7 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import se.definewild.wildhttp.io.Log;
+import se.definewild.wildhttp.io.file.log.Log;
 
 public class Server implements Runnable {
 

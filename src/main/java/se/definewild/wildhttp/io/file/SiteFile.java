@@ -1,4 +1,4 @@
-package se.definewild.wildhttp.io;
+package se.definewild.wildhttp.io.file;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.HashMap;
+
+import se.definewild.wildhttp.utils.WHA;
 
 public class SiteFile {
 
