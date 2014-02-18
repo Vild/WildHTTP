@@ -46,11 +46,11 @@ public class Server implements Runnable {
     }
   }
 
-  public final int MAX_THREADS = 100;
   public final static ArrayList<Client> Clients = new ArrayList<Client>();
-
   private final clientCleanup cleanup;
+
   private final Log log = Log.getLog();
+  public final int MAX_THREADS = 100;
   private final int port;
 
   private ServerSocket server;

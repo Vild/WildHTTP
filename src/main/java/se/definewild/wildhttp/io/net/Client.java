@@ -5,8 +5,8 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 
 import se.definewild.wildhttp.io.file.SiteFile;
-import se.definewild.wildhttp.io.file.SiteGetter;
 import se.definewild.wildhttp.io.file.SiteFile.HTTPCode;
+import se.definewild.wildhttp.io.file.SiteGetter;
 import se.definewild.wildhttp.io.file.log.Log;
 import se.definewild.wildhttp.io.net.packet.PacketReceiver;
 import se.definewild.wildhttp.io.net.packet.PacketResponce;

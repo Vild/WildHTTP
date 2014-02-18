@@ -9,8 +9,9 @@ import java.util.logging.Logger;
 import jline.ConsoleReader;
 import jline.Terminal;
 import se.definewild.wildhttp.io.file.log.Log;
+import se.definewild.wildhttp.io.file.script.token.Tokenizer;
 
-public class TokenTest {
+public class TestScript {
 
   private static String getContent(File file) {
     try {
@@ -49,9 +50,9 @@ public class TokenTest {
 
     new Log(reader);
 
-    String text = getContent(new File("test.ws"));
+    final String text = getContent(new File("test.ws"));
 
-    Tokenizer a = new Tokenizer(text);
+    final Tokenizer a = new Tokenizer(text);
     for (int i = 0; i < a.getTokens().size(); i++)
       Log.getLog().Info(i + ": " + a.getTokens().get(i).toString());
   }
